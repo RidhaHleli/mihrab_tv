@@ -12,15 +12,453 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/style.css">
+<style>
+  :root {
+    --bg-main: #071917;
+    --bg-card: rgba(18, 48, 44, 0.65);
+    --bg-card-hover: rgba(26, 66, 61, 0.85);
+    --accent-gold: #e5b869;
+    --accent-gold-hover: #f3cc83;
+    --text-primary: #f0f7f5;
+    --text-muted: #a3c2be;
+    --border-color: rgba(229, 184, 105, 0.2);
+    --radius-lg: 20px;
+    --radius-md: 12px;
+    --shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-family: 'Tajawal', system-ui, sans-serif;
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  .skip {
+    position: absolute;
+    top: -100px;
+    right: 10px;
+    background: var(--accent-gold);
+    color: #000;
+    padding: 8px 16px;
+    border-radius: 4px;
+    z-index: 1000;
+  }
+  .skip:focus { top: 10px; }
+
+  /* Header */
+  header.top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 2rem;
+    background: rgba(7, 25, 23, 0.85);
+    backdrop-filter: blur(12px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    color: var(--accent-gold);
+    font-weight: 800;
+    font-size: 1.4rem;
+  }
+  .brand svg { width: 32px; height: 32px; fill: currentColor; }
+
+  header.top nav { display: flex; gap: 1.5rem; }
+  header.top nav a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+  }
+  header.top nav a:hover { color: var(--accent-gold); }
+
+  .lang {
+    display: flex;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 30px;
+    padding: 4px;
+    border: 1px solid var(--border-color);
+  }
+  .lang button {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    padding: 4px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 700;
+    transition: all 0.2s;
+  }
+  .lang button:hover, .lang button[aria-pressed="true"] {
+    background: var(--accent-gold);
+    color: #0c2624;
+  }
+
+  /* Hero Section */
+  .hero {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 3rem;
+    max-width: 1280px;
+    margin: 3rem auto;
+    padding: 0 1.5rem;
+    align-items: center;
+  }
+
+  .hero-text h1 {
+    font-family: 'Amiri', serif;
+    font-size: clamp(2.2rem, 4vw, 3.5rem);
+    line-height: 1.2;
+    color: #fff;
+    margin-bottom: 1rem;
+  }
+
+  .hero-text p.lead {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+  }
+
+  .cta {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1.8rem;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 700;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .btn.primary {
+    background: var(--accent-gold);
+    color: #071917;
+    border-color: var(--accent-gold);
+    box-shadow: 0 4px 20px rgba(229, 184, 105, 0.3);
+  }
+
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
+  }
+
+  .btn.primary:hover {
+    background: var(--accent-gold-hover);
+    box-shadow: 0 6px 25px rgba(229, 184, 105, 0.45);
+  }
+
+  .fine {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 1rem;
+  }
+
+  /* Stage / TV Simulator */
+  .stage {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(10px);
+  }
+
+  .tv {
+    position: relative;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 4px solid #1a2e2b;
+    box-shadow: 0 0 30px rgba(0,0,0,0.6);
+  }
+
+  .themes {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+  }
+
+  .themes button {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    padding: 6px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .themes button[aria-pressed="true"], .themes button:hover {
+    background: var(--accent-gold);
+    color: #000;
+  }
+
+  .demo-note {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.75rem;
+  }
+
+  /* Features Section */
+  .features {
+    max-width: 1280px;
+    margin: 5rem auto;
+    padding: 0 1.5rem;
+  }
+
+  .features h2 {
+    text-align: center;
+    font-family: 'Amiri', serif;
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+    color: var(--accent-gold);
+  }
+
+  .groups {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2rem;
+  }
+
+  .groups article {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    transition: transform 0.3s, background 0.3s;
+  }
+
+  .groups article:hover {
+    transform: translateY(-5px);
+    background: var(--bg-card-hover);
+  }
+
+  .groups h3 {
+    font-size: 1.4rem;
+    color: var(--accent-gold);
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+  }
+
+  .groups ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .groups li {
+    margin-bottom: 1.2rem;
+  }
+
+  .groups li b {
+    display: block;
+    color: #fff;
+    font-size: 1.05rem;
+  }
+
+  .groups li span {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }
+
+  /* Phone / Remote Control Section */
+  .phone {
+    max-width: 1280px;
+    margin: 5rem auto;
+    padding: 3rem 2rem;
+    background: linear-gradient(135deg, rgba(12, 38, 36, 0.8), rgba(7, 25, 23, 0.9));
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: center;
+  }
+
+  .phone-copy h2 {
+    font-family: 'Amiri', serif;
+    font-size: 2.2rem;
+    color: var(--accent-gold);
+    margin-top: 0;
+  }
+
+  .phone-copy p {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+  }
+
+  .phone-art {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .handset {
+    background: #0f2d29;
+    border: 2px solid var(--border-color);
+    border-radius: 24px;
+    padding: 1.5rem;
+    width: 220px;
+    box-shadow: var(--shadow);
+  }
+
+  .h-title {
+    text-align: center;
+    font-weight: 800;
+    color: var(--accent-gold);
+    margin-bottom: 1rem;
+  }
+
+  .h-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.8rem;
+    font-size: 0.9rem;
+  }
+
+  .sw {
+    width: 32px;
+    height: 18px;
+    background: #1f423d;
+    border-radius: 10px;
+    position: relative;
+    display: inline-block;
+  }
+
+  .sw.on { background: var(--accent-gold); }
+  .sw.on::after { right: 2px; background: #000; }
+  .sw::after {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #fff;
+    top: 2px;
+    left: 2px;
+  }
+
+  .h-field {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 8px;
+    font-size: 0.75rem;
+    margin: 1rem 0;
+    color: var(--text-muted);
+  }
+
+  .h-save {
+    background: var(--accent-gold);
+    color: #000;
+    text-align: center;
+    padding: 6px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+
+  .qr {
+    background: #fff;
+    padding: 12px;
+    border-radius: var(--radius-md);
+    width: 120px;
+    height: 120px;
+  }
+
+  .qr svg { width: 100%; height: 100%; fill: #000; }
+
+  /* Install Section */
+  .install {
+    max-width: 800px;
+    margin: 5rem auto;
+    padding: 0 1.5rem;
+    text-align: center;
+  }
+
+  .install h2 {
+    font-family: 'Amiri', serif;
+    font-size: 2.2rem;
+    color: var(--accent-gold);
+    margin-bottom: 2rem;
+  }
+
+  .install ol {
+    text-align: right;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 2rem 3rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .install li {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+  }
+
+  /* Footer */
+  footer {
+    border-top: 1px solid var(--border-color);
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    color: var(--text-muted);
+    background: rgba(4, 15, 14, 0.95);
+    margin-top: 5rem;
+  }
+
+  footer a {
+    color: var(--accent-gold);
+    text-decoration: none;
+    font-weight: 700;
+  }
+
+  footer a:hover { text-decoration: underline; }
+
+  /* Responsive Design */
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; }
+    .phone { grid-template-columns: 1fr; text-align: center; }
+    .phone-art { flex-direction: column; }
+    header.top nav { display: none; }
+  }
+</style>
 </head>
 <body>
 <a class="skip" href="#main" data-i18n="skip">Aller au contenu</a>
 
 <header class="top">
   <a class="brand" href="#" aria-label="MIHRAB">
-    <svg viewBox="0 0 32 32" aria-hidden="true"><use href="assets/favicon.svg#mark"/></svg>
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 2L2 7v15h20V7L12 2zm0 2.8L19 9v11H5V9l7-4.2zM12 11a3 3 0 0 0-3 3v6h6v-6a3 3 0 0 0-3-3z"/>
+    </svg>
     <span>MIHRAB <bdi class="ar-name">محراب</bdi></span>
   </a>
   <nav aria-label="Navigation">
@@ -29,7 +467,7 @@
     <a href="#installer" data-i18n="nav_install">Installer</a>
   </nav>
   <div class="lang" role="group" aria-label="Langue / Language / اللغة">
-    <button type="button" data-lang="ar" lang="ar">العربية</button>
+    <button type="button" data-lang="ar" lang="ar" aria-pressed="true">العربية</button>
     <button type="button" data-lang="fr" lang="fr">FR</button>
     <button type="button" data-lang="en" lang="en">EN</button>
   </div>
@@ -41,8 +479,14 @@
       <h1 data-i18n="h1">L'heure de la prière, sur l'écran de la mosquée.</h1>
       <p class="lead" data-i18n="lead">MIHRAB affiche les horaires, joue l'adhan, annonce l'iqama et fait défiler vos annonces. Gratuit, sans compte, même sans Internet.</p>
       <div class="cta">
-        <a class="btn primary" id="dl" href="https://github.com/RidhaHleli/mihrab_tv/releases/latest" data-i18n="cta_dl">Télécharger l'APK</a>
-        <a class="btn" href="https://github.com/RidhaHleli/mihrab_tv" data-i18n="cta_src">Voir le code source</a>
+        <a class="btn primary" id="dl" href="https://github.com/RidhaHleli/mihrab_tv/releases/download/v1.0.0/app-release.apk" download data-i18n="cta_dl">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Télécharger l'APK
+        </a>
+        <a class="btn" href="https://github.com/RidhaHleli/mihrab_tv" target="_blank" rel="noopener" data-i18n="cta_src">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          Voir le code source
+        </a>
       </div>
       <p class="fine" data-i18n="fine">Android TV, tablette et téléphone · arabe, français, anglais</p>
     </div>
@@ -66,7 +510,6 @@
           </div>
           <div class="s-ticker"><span id="s-ticker">✦ صلاة الجمعة بعد الأذان بثلاثين دقيقة ✦ درس بعد صلاة المغرب</span></div>
         </div>
-        <div class="stand" aria-hidden="true"></div>
       </div>
       <div class="themes" role="group" aria-label="Thème">
         <button type="button" data-theme="kairouan" aria-pressed="true" data-i18n="t_kairouan">Kairouan</button>
@@ -124,25 +567,30 @@
         <div class="h-field" data-i18n="ph_ann">Cours de tajwid après Maghrib</div>
         <div class="h-save" data-i18n="ph_save">Enregistrer</div>
       </div>
-      <div class="qr"><svg viewBox="0 0 21 21" shape-rendering="crispEdges"><path id="qrpath" fill="currentColor"/></svg></div>
+      <div class="qr">
+        <svg viewBox="0 0 21 21" shape-rendering="crispEdges"><path id="qrpath" fill="currentColor"/></svg>
+      </div>
     </div>
   </section>
 
   <section id="installer" class="install">
     <h2 data-i18n="i_title">Installer sur la TV de la mosquée</h2>
     <ol>
-      <li data-i18n="i1">Téléchargez le fichier APK depuis la page des versions GitHub.</li>
+      <li data-i18n="i1">Téléchargez le fichier APK en cliquant sur le bouton ci-dessous.</li>
       <li data-i18n="i2">Copiez-le sur une clé USB, ou installez « Downloader » sur la TV et saisissez le lien.</li>
       <li data-i18n="i3">Ouvrez l'application, choisissez la ville et le nom de la mosquée dans les réglages.</li>
       <li data-i18n="i4">Autorisez « Affichage par-dessus les autres applications » pour le démarrage automatique.</li>
     </ol>
-    <a class="btn primary" href="https://github.com/RidhaHleli/mihrab_tv/releases/download/v1.0.0/app-release.apk" data-i18n="cta_dl">Télécharger l'APK</a>
+    <a class="btn primary" href="https://github.com/RidhaHleli/mihrab_tv/releases/download/v1.0.0/app-release.apk" download data-i18n="cta_dl">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+      Télécharger l'APK
+    </a>
   </section>
 </main>
 
 <footer>
-  <p><span data-i18n="made">Créé par</span> <a href="https://fluttiris.tn" rel="noopener">Fluttiris</a> — <span data-i18n="free">application gratuite pour les mosquées et les familles.</span></p>
-  <p><a href="https://fluttiris.tn" rel="noopener">fluttiris.tn</a> · <a href="https://github.com/RidhaHleli/mihrab_tv" rel="noopener">GitHub</a></p>
+  <p><span data-i18n="made">Créé par</span> <a href="https://fluttiris.tn" target="_blank" rel="noopener">Fluttiris</a> — <span data-i18n="free">application gratuite pour les mosquées et les familles.</span></p>
+  <p><a href="https://fluttiris.tn" target="_blank" rel="noopener">fluttiris.tn</a> · <a href="https://github.com/RidhaHleli/mihrab_tv" target="_blank" rel="noopener">GitHub</a></p>
 </footer>
 
 <script src="assets/app.js"></script>
