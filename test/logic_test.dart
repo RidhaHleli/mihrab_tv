@@ -5,6 +5,7 @@ import 'package:mihrab_tv/core/utils/hijri_date.dart';
 import 'package:mihrab_tv/features/home/domain/home_logic.dart';
 import 'package:mihrab_tv/features/prayer_times/domain/entities/prayer_time.dart';
 import 'package:mihrab_tv/features/settings/domain/entities/app_settings.dart';
+import 'package:mihrab_tv/features/settings/presentation/pages/qr_scan_page.dart';
 
 /// Prayer times of one day (Wednesday 4 November 2026 or Friday 6th).
 List<PrayerTime> _day(int day) {
@@ -225,6 +226,29 @@ void main() {
       final b = DailyReminders.forDay(ReminderKind.verse, DateTime(2026, 11, 4, 22));
 
       expect(identical(a, b), isTrue);
+    });
+  });
+
+  group('QR scanner', () {
+    test('accepts a MIHRAB remote address on the local network', () {
+      expect(
+        QrScanPage.parseRemoteUrl('http://192.168.1.20:8484/?t=123456'),
+        isNotNull,
+      );
+      expect(QrScanPage.parseRemoteUrl('http://10.0.0.5:8485/?t=1'), isNotNull);
+      expect(
+        QrScanPage.parseRemoteUrl('http://172.20.1.2:8484/?t=1'),
+        isNotNull,
+      );
+    });
+
+    test('rejects anything else', () {
+      expect(QrScanPage.parseRemoteUrl(null), isNull);
+      expect(QrScanPage.parseRemoteUrl('https://192.168.1.20/?t=1'), isNull);
+      expect(QrScanPage.parseRemoteUrl('http://example.com/?t=1'), isNull);
+      expect(QrScanPage.parseRemoteUrl('http://8.8.8.8:8484/?t=1'), isNull);
+      expect(QrScanPage.parseRemoteUrl('http://192.168.1.20:8484/'), isNull);
+      expect(QrScanPage.parseRemoteUrl('http://172.32.0.1/?t=1'), isNull);
     });
   });
 }

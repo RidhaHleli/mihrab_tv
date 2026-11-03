@@ -88,7 +88,8 @@ class _MarqueeTextState extends State<MarqueeText>
         return SizedBox(
           height: height,
           child: ClipRect(
-            child: AnimatedBuilder(
+            child: RepaintBoundary(
+              child: AnimatedBuilder(
               animation: _controller,
               builder: (context, child) {
                 final seconds = _clock.elapsedMilliseconds / 1000.0;
@@ -107,6 +108,7 @@ class _MarqueeTextState extends State<MarqueeText>
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [copy(), SizedBox(width: widget.gap), copy()],
+              ),
               ),
             ),
           ),

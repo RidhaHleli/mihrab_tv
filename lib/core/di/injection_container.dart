@@ -1,6 +1,7 @@
 import '../../features/home/presentation/controllers/home_controller.dart';
 import '../l10n/app_strings.dart';
 import '../services/adhan_player_service.dart';
+import '../services/prayer_notification_service.dart';
 import '../theme/app_theme_controller.dart';
 import '../theme/mihrab_palette.dart';
 
@@ -25,15 +26,22 @@ import '../../features/settings/presentation/controllers/settings_controller.dar
 class InjectionContainer {
   InjectionContainer._();
 
-  static HomeController createHomeController() {
-    final settingsDataSource = LocalSettingsDataSource();
-
-    final repository = PrayerTimesRepositoryImpl(
+  static PrayerTimesRepositoryImpl _prayerRepository() {
+    return PrayerTimesRepositoryImpl(
       dataSource: LocalPrayerTimesDataSource(),
       remoteDataSource: RemotePrayerTimesDataSource(),
       cacheDataSource: LocalPrayerCalendarCacheDataSource(),
-      settingsDataSource: settingsDataSource,
+      settingsDataSource: LocalSettingsDataSource(),
     );
+  }
+
+  /// Schedules the adhan notifications (phones, works with the app closed).
+  static PrayerNotificationService createNotificationService() {
+    return PrayerNotificationService(GetDailyPrayerTimes(_prayerRepository()));
+  }
+
+  static HomeController createHomeController() {
+    final repository = _prayerRepository();
 
     final getDailyPrayerTimes = GetDailyPrayerTimes(repository);
 

@@ -1,6 +1,10 @@
 package tn.fluttiris.mihrab_tv
 
+import android.app.UiModeManager
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
@@ -15,6 +19,7 @@ class MainActivity : FlutterActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
             .setMethodCallHandler { call, result ->
                 when (call.method) {
+                    "isTv" -> result.success(isTv())
                     "canDrawOverlays" -> result.success(canDrawOverlays())
                     "openOverlaySettings" -> {
                         if (!canDrawOverlays()) {
@@ -33,6 +38,12 @@ class MainActivity : FlutterActivity() {
                     else -> result.notImplemented()
                 }
             }
+    }
+
+    private fun isTv(): Boolean {
+        val ui = getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+        return ui.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION ||
+            packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK)
     }
 
     private fun canDrawOverlays(): Boolean {

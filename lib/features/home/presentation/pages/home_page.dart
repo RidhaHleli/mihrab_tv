@@ -10,6 +10,7 @@ import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/remote/remote_control_service.dart';
 import '../../../../core/responsive/responsive.dart';
 import '../../../../core/services/adhan_player_service.dart';
+import '../../../../core/services/prayer_notification_service.dart';
 import '../../../../core/theme/mihrab_palette.dart';
 import '../../../../core/theme/themed_background.dart';
 import '../../../../core/utils/date_time_utils.dart';
@@ -35,10 +36,17 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   late final HomeController _controller;
   late final SettingsController _settingsController;
   late final AdhanPlayerService _adhan;
+  late final PrayerNotificationService _notifier;
+
+  /// On phones the system notification rings the adhan (even when the app is
+  /// closed), so the in-app player stays silent to avoid a double adhan.
+  bool _notificationsActive = false;
+  bool _askedPermissions = false;
+  DateTime? _scheduledForSync;
 
   PrayerType? _adhanPrayer;
 
@@ -57,6 +65,9 @@ class _HomePageState extends State<HomePage> {
     _controller = InjectionContainer.createHomeController();
     _settingsController = InjectionContainer.createSettingsController();
     _adhan = InjectionContainer.createAdhanPlayerService();
+    _notifier = InjectionContainer.createNotificationService();
+    WidgetsBinding.instance.addObserver(this);
+    _controller.addListener(_onControllerChanged);
 
     _controller.onPrayerTime = _handlePrayerTime;
     AppEvents.settingsChanged.addListener(_onSettingsEvent);
@@ -67,6 +78,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _controller.removeListener(_onControllerChanged);
     AppEvents.settingsChanged.removeListener(_onSettingsEvent);
     _controller.onPrayerTime = null;
     _controller.dispose();
@@ -80,6 +93,37 @@ class _HomePageState extends State<HomePage> {
     await _settingsController.loadSettings();
     if (!mounted) return;
     unawaited(RemoteControlService.instance.apply(_settingsController.settings));
+    await _scheduleNotifications();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Re-fill the 7 days of notifications each time the app comes back.
+    if (state == AppLifecycleState.resumed) {
+      unawaited(_scheduleNotifications());
+    }
+  }
+
+  /// New prayer data (first load or a successful sync) -> new notifications.
+  void _onControllerChanged() {
+    final synced = _controller.lastSync;
+    if (synced != null && synced != _scheduledForSync) {
+      _scheduledForSync = synced;
+      unawaited(_scheduleNotifications());
+    }
+  }
+
+  Future<void> _scheduleNotifications() async {
+    final settings = _settingsController.settings;
+
+    _notificationsActive = await PrayerNotificationService.isActive(settings);
+
+    if (_notificationsActive && !_askedPermissions) {
+      _askedPermissions = true;
+      await PrayerNotificationService.ensurePermissions();
+    }
+
+    await _notifier.reschedule(settings);
   }
 
   /// Settings changed from the phone remote control.
@@ -101,11 +145,12 @@ class _HomePageState extends State<HomePage> {
     }
 
     unawaited(RemoteControlService.instance.apply(after));
+    await _scheduleNotifications();
   }
 
   void _handlePrayerTime(PrayerTime prayer) {
     final settings = _settingsController.settings;
-    if (!settings.adhanEnabled) return;
+    if (!settings.adhanEnabled || _notificationsActive) return;
 
     _adhanPrayer = prayer.type;
 

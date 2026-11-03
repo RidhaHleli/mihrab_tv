@@ -40,6 +40,7 @@ class LocalSettingsDataSource {
   /// the plugin), so keep this exact name.
   static const _autoStartKey = 'auto_start_enabled';
 
+  static const _notificationsKey = 'notifications_enabled';
   static const _remoteEnabledKey = 'remote_enabled';
   static const _remoteTokenKey = 'remote_token';
   static const _themeIdKey = 'theme_id';
@@ -104,6 +105,8 @@ class LocalSettingsDataSource {
       imsakMinutes: prefs.getInt(_imsakMinutesKey) ?? d.imsakMinutes,
       nightModeEnabled: prefs.getBool(_nightModeKey) ?? d.nightModeEnabled,
       autoStartEnabled: prefs.getBool(_autoStartKey) ?? d.autoStartEnabled,
+      notificationsEnabled:
+          prefs.getBool(_notificationsKey) ?? d.notificationsEnabled,
       remoteEnabled: prefs.getBool(_remoteEnabledKey) ?? d.remoteEnabled,
       remoteToken: token,
       themeId: prefs.getString(_themeIdKey) ?? d.themeId,
@@ -150,6 +153,7 @@ class LocalSettingsDataSource {
     await prefs.setBool(_nightModeKey, s.nightModeEnabled);
     await prefs.setBool(_autoStartKey, s.autoStartEnabled);
 
+    await prefs.setBool(_notificationsKey, s.notificationsEnabled);
     await prefs.setBool(_remoteEnabledKey, s.remoteEnabled);
     await prefs.setString(_remoteTokenKey, s.remoteToken);
     await prefs.setString(_themeIdKey, s.themeId);
