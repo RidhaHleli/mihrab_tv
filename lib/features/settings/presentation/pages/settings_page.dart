@@ -13,7 +13,10 @@ import '../../../../core/theme/themed_background.dart';
 import '../../../../core/widgets/focusable_card.dart';
 import '../../../locations/presentation/pages/location_selection_page.dart';
 import '../../../prayer_times/domain/entities/prayer_time.dart';
+import '../../../../core/services/prayer_notification_service.dart';
+import '../../domain/entities/app_settings.dart';
 import '../controllers/settings_controller.dart';
+import 'qr_scan_page.dart';
 import '../widgets/remote_control_card.dart';
 import '../widgets/settings_widgets.dart';
 
@@ -101,6 +104,17 @@ class _SettingsPageState extends State<SettingsPage> {
       (s) => s.copyWith(remoteEnabled: enabled),
     );
     unawaited(RemoteControlService.instance.apply(_controller.settings));
+  }
+
+  Future<void> _setNotifications(bool enabled) async {
+    await _controller.update((s) => s.copyWith(notificationsEnabled: enabled));
+
+    if (enabled) {
+      final granted = await PrayerNotificationService.ensurePermissions();
+      if (!granted && mounted) _toast(context.tr('notif_denied'));
+    }
+
+    // The home page re-schedules when it gets the settings back.
   }
 
   @override
@@ -515,6 +529,13 @@ class _SettingsPageState extends State<SettingsPage> {
                       ),
                     ),
 
+                    // --- Phone only: background notifications + QR scanner --
+                    _PhoneSection(
+                      settings: s,
+                      onNotifications: _setNotifications,
+                      onToast: _toast,
+                    ),
+
                     if (_controller.error != null) ...[
                       const SizedBox(height: 16),
                       Text(
@@ -607,6 +628,95 @@ class _OverlayPermissionState extends State<_OverlayPermission>
         icon: const Icon(Icons.layers_outlined),
         label: Text(context.tr('allow_overlay')),
       ),
+    );
+  }
+}
+
+
+/// Notifications that work with the app closed + QR scanner for the TV
+/// remote. Only shown on phones and tablets (never on a TV).
+class _PhoneSection extends StatelessWidget {
+  const _PhoneSection({
+    required this.settings,
+    required this.onNotifications,
+    required this.onToast,
+  });
+
+  final AppSettings settings;
+  final Future<void> Function(bool) onNotifications;
+  final void Function(String) onToast;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!SystemService.isAndroid) return const SizedBox.shrink();
+
+    return FutureBuilder<bool>(
+      future: SystemService.isTv(),
+      builder: (context, snapshot) {
+        if (snapshot.data != false) return const SizedBox.shrink();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SettingsSectionTitle(context.tr('notif_section')),
+            SettingsCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SettingsSwitch(
+                    title: context.tr('notif_switch'),
+                    subtitle: context.tr('notif_sub'),
+                    value: settings.notificationsEnabled,
+                    onChanged: onNotifications,
+                  ),
+                  if (settings.notificationsEnabled)
+                    Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: FilledButton.tonalIcon(
+                        onPressed: () async {
+                          final denied = context.tr('notif_denied');
+                          final ok =
+                              await PrayerNotificationService.ensurePermissions();
+                          if (!ok) {
+                            onToast(denied);
+                            return;
+                          }
+                          await PrayerNotificationService.showTest(
+                            settings.language,
+                          );
+                        },
+                        icon: const Icon(Icons.notifications_active_outlined),
+                        label: Text(context.tr('notif_test')),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            SettingsSectionTitle(context.tr('scan_title')),
+            SettingsCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(context.tr('scan_sub'), style: context.text.body),
+                  const SizedBox(height: 12),
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: FilledButton.icon(
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const QrScanPage(),
+                        ),
+                      ),
+                      icon: const Icon(Icons.qr_code_scanner_rounded),
+                      label: Text(context.tr('scan_button')),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

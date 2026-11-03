@@ -8,6 +8,21 @@ abstract final class SystemService {
   static bool get isAndroid =>
       !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
 
+  static bool? _isTv;
+
+  /// True on Android TV / boxes (leanback), false on phones and tablets.
+  static Future<bool> isTv() async {
+    if (_isTv != null) return _isTv!;
+    if (!isAndroid) return _isTv = false;
+
+    try {
+      _isTv = await _channel.invokeMethod<bool>('isTv') ?? false;
+    } catch (_) {
+      _isTv = false;
+    }
+    return _isTv!;
+  }
+
   /// Whether the app may start itself in the background after a reboot.
   static Future<bool> canDrawOverlays() async {
     if (!isAndroid) return true;

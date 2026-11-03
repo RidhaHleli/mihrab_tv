@@ -252,6 +252,21 @@
   };
   probe.src = 'assets/screen.png';
 
+  // Show the latest published version next to the download button.
+  try {
+    fetch('https://api.github.com/repos/RidhaHleli/mihrab_tv/releases/latest')
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (rel) {
+        if (!rel || !rel.tag_name) return;
+        var apk = (rel.assets || []).filter(function (a) { return a.name === 'mihrab.apk'; })[0];
+        var mb = apk ? ' \u00b7 ' + (apk.size / 1048576).toFixed(0) + ' MB' : '';
+        var el = document.getElementById('dl-meta');
+        el.textContent = rel.tag_name + mb;
+        el.hidden = false;
+      })
+      .catch(function () {});
+  } catch (e) {}
+
   drawQr();
   applyLang(initialLang());
   setInterval(renderTv, 1000);

@@ -27,6 +27,7 @@ class AppSettings {
     this.imsakMinutes = 10,
     this.nightModeEnabled = false,
     this.autoStartEnabled = true,
+    this.notificationsEnabled = true,
     this.remoteEnabled = false,
     this.remoteToken = '',
     this.themeId = 'kairouan',
@@ -74,6 +75,9 @@ class AppSettings {
   final bool nightModeEnabled;
   final bool autoStartEnabled;
 
+  /// Phones: adhan notifications that ring even when the app is closed.
+  final bool notificationsEnabled;
+
   final bool remoteEnabled;
   final String remoteToken;
 
@@ -118,6 +122,7 @@ class AppSettings {
     int? imsakMinutes,
     bool? nightModeEnabled,
     bool? autoStartEnabled,
+    bool? notificationsEnabled,
     bool? remoteEnabled,
     String? remoteToken,
     String? themeId,
@@ -148,6 +153,7 @@ class AppSettings {
       imsakMinutes: imsakMinutes ?? this.imsakMinutes,
       nightModeEnabled: nightModeEnabled ?? this.nightModeEnabled,
       autoStartEnabled: autoStartEnabled ?? this.autoStartEnabled,
+      notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
       remoteEnabled: remoteEnabled ?? this.remoteEnabled,
       remoteToken: remoteToken ?? this.remoteToken,
       themeId: themeId ?? this.themeId,

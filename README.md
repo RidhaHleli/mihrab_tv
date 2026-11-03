@@ -32,6 +32,30 @@ téléphones et tablettes Android, et fonctionne **sans connexion Internet**.
 - Indicateur réel de la dernière synchronisation
 - Villes de Tunisie + grandes villes du monde, lieu personnalisé (coordonnées + fuseau), choix de la méthode de calcul
 
+## Publier une version (CI/CD)
+
+Le workflow `.github/workflows/release.yml` construit l'APK et le publie dans les
+*Releases* GitHub. Le bouton de la landing page pointe vers
+`releases/latest/download/mihrab.apk` : chaque nouvelle version devient
+automatiquement le téléchargement du site.
+
+```bash
+git tag v1.1.0
+git push origin v1.1.0
+```
+
+Clé de signature (une seule fois, à conserver précieusement : sans elle, les
+mises à jour ne peuvent plus s'installer par-dessus l'ancienne version) :
+
+```bash
+keytool -genkey -v -keystore release.keystore -alias mihrab -keyalg RSA -keysize 2048 -validity 10000
+base64 -w0 release.keystore   # (Windows PowerShell : [Convert]::ToBase64String([IO.File]::ReadAllBytes("release.keystore")))
+```
+
+Puis, dans GitHub → Settings → Secrets and variables → Actions, créer :
+`ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`.
+Sans ces secrets, l'APK est signé avec la clé de debug (installable, mais non mise à jour par une version signée autrement).
+
 ## Lancer le projet
 
 ```bash
