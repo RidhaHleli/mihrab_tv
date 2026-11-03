@@ -6,6 +6,10 @@ on:
     paths-ignore: ['docs/**', '**.md']
   pull_request:
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   analyze-and-test:
     runs-on: ubuntu-latest
@@ -20,3 +24,18 @@ jobs:
       - run: flutter pub get
       - run: flutter analyze --no-fatal-infos --no-fatal-warnings
       - run: flutter test
+
+  # Pull requests opened by the owner are merged as soon as the checks pass;
+  # the merge then triggers the release workflow (APK + download link).
+  auto-merge:
+    needs: analyze-and-test
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.actor == github.repository_owner
+    runs-on: ubuntu-latest
+    steps:
+      - run: gh pr merge "$PR_URL" --squash --delete-branch
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
