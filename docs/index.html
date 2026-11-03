@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MIHRAB | محراب — Horaires de prière et adhan pour mosquées et maisons</title>
+<meta name="description" content="MIHRAB est une application gratuite qui affiche les horaires de prière et joue l'adhan sur Android TV, tablette et téléphone. Fonctionne hors ligne. Créée par Fluttiris.">
+<meta property="og:title" content="MIHRAB | محراب">
+<meta property="og:description" content="Horaires de prière, adhan, iqama et annonces sur la TV de la mosquée. Gratuit, hors ligne.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0c2624">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<a class="skip" href="#main" data-i18n="skip">Aller au contenu</a>
+
+<header class="top">
+  <a class="brand" href="#" aria-label="MIHRAB">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><use href="assets/favicon.svg#mark"/></svg>
+    <span>MIHRAB <bdi class="ar-name">محراب</bdi></span>
+  </a>
+  <nav aria-label="Navigation">
+    <a href="#fonctions" data-i18n="nav_features">Fonctions</a>
+    <a href="#telephone" data-i18n="nav_phone">Téléphone</a>
+    <a href="#installer" data-i18n="nav_install">Installer</a>
+  </nav>
+  <div class="lang" role="group" aria-label="Langue / Language / اللغة">
+    <button type="button" data-lang="ar" lang="ar">العربية</button>
+    <button type="button" data-lang="fr" lang="fr">FR</button>
+    <button type="button" data-lang="en" lang="en">EN</button>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="hero-text">
+      <h1 data-i18n="h1">L'heure de la prière, sur l'écran de la mosquée.</h1>
+      <p class="lead" data-i18n="lead">MIHRAB affiche les horaires, joue l'adhan, annonce l'iqama et fait défiler vos annonces. Gratuit, sans compte, même sans Internet.</p>
+      <div class="cta">
+        <a class="btn primary" id="dl" href="https://github.com/RidhaHleli/mihrab_tv/releases/latest" data-i18n="cta_dl">Télécharger l'APK</a>
+        <a class="btn" href="https://github.com/RidhaHleli/mihrab_tv" data-i18n="cta_src">Voir le code source</a>
+      </div>
+      <p class="fine" data-i18n="fine">Android TV, tablette et téléphone · arabe, français, anglais</p>
+    </div>
+
+    <div class="stage">
+      <div class="tv" id="tv" data-theme="kairouan">
+        <div class="screen" id="screen" aria-label="Aperçu de l'application" role="img">
+          <div class="s-top">
+            <span class="s-badge">✦</span>
+            <div><b id="s-mosque">مسجد الرحمة</b><small id="s-city">القيروان، تونس</small></div>
+            <span class="s-clock" id="s-clock" dir="ltr">--:--</span>
+          </div>
+          <div class="s-body">
+            <div class="s-hero">
+              <small id="s-next-label">الصلاة القادمة</small>
+              <strong id="s-next">العصر</strong>
+              <span class="s-time" id="s-next-time" dir="ltr">15:09</span>
+              <div class="s-count"><small id="s-rem-label">الوقت المتبقي</small><span id="s-count" dir="ltr">00 : 00 : 00</span></div>
+            </div>
+            <ul class="s-grid" id="s-grid"></ul>
+          </div>
+          <div class="s-ticker"><span id="s-ticker">✦ صلاة الجمعة بعد الأذان بثلاثين دقيقة ✦ درس بعد صلاة المغرب</span></div>
+        </div>
+        <div class="stand" aria-hidden="true"></div>
+      </div>
+      <div class="themes" role="group" aria-label="Thème">
+        <button type="button" data-theme="kairouan" aria-pressed="true" data-i18n="t_kairouan">Kairouan</button>
+        <button type="button" data-theme="makkah" aria-pressed="false" data-i18n="t_makkah">La Mecque</button>
+        <button type="button" data-theme="quds" aria-pressed="false" data-i18n="t_quds">Al-Qods</button>
+      </div>
+      <p class="demo-note" data-i18n="demo_note">Aperçu animé à l'heure de votre appareil, avec des horaires d'exemple.</p>
+    </div>
+  </section>
+
+  <section id="fonctions" class="features">
+    <h2 data-i18n="f_title">Ce que MIHRAB fait pour votre mosquée</h2>
+    <div class="groups">
+      <article>
+        <h3 data-i18n="g1">Autour de la prière</h3>
+        <ul>
+          <li><b data-i18n="g1a">Adhan automatique</b> <span data-i18n="g1a_t">Fajr avec son propre adhan, volume réglable.</span></li>
+          <li><b data-i18n="g1b">Écran d'iqama</b> <span data-i18n="g1b_t">Compte à rebours, puis « alignez les rangs, éteignez vos téléphones ».</span></li>
+          <li><b data-i18n="g1c">Réglages fins</b> <span data-i18n="g1c_t">Délai d'iqama par prière, horaires ajustables de plus ou moins 30 minutes.</span></li>
+          <li><b data-i18n="g1d">Vendredi</b> <span data-i18n="g1d_t">Délai propre à la Jumu'a et rappel de sourate Al-Kahf.</span></li>
+        </ul>
+      </article>
+      <article>
+        <h3 data-i18n="g2">Pour la communauté</h3>
+        <ul>
+          <li><b data-i18n="g2a">Annonces défilantes</b> <span data-i18n="g2a_t">Cours, funérailles, collectes : modifiables à tout moment.</span></li>
+          <li><b data-i18n="g2b">Mode Ramadan</b> <span data-i18n="g2b_t">Imsak, compte à rebours de l'iftar, taraweeh.</span></li>
+          <li><b data-i18n="g2c">Verset, hadith, dhikr</b> <span data-i18n="g2c_t">Un nouveau rappel chaque jour, inclus dans l'application.</span></li>
+          <li><b data-i18n="g2d">Date hégirienne</b> <span data-i18n="g2d_t">Corrigeable de deux jours selon l'observation de la lune.</span></li>
+        </ul>
+      </article>
+      <article>
+        <h3 data-i18n="g3">Fiable au quotidien</h3>
+        <ul>
+          <li><b data-i18n="g3a">Fonctionne hors ligne</b> <span data-i18n="g3a_t">Les horaires du mois sont téléchargés puis gardés en mémoire.</span></li>
+          <li><b data-i18n="g3b">Mode nuit</b> <span data-i18n="g3b_t">Écran sombre entre Isha et Fajr, réveil à la moindre touche.</span></li>
+          <li><b data-i18n="g3c">Démarrage automatique</b> <span data-i18n="g3c_t">L'application s'ouvre seule quand la TV s'allume.</span></li>
+          <li><b data-i18n="g3d">Partout dans le monde</b> <span data-i18n="g3d_t">Villes de Tunisie, grandes villes, lieu personnalisé, 21 méthodes de calcul.</span></li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <section id="telephone" class="phone">
+    <div class="phone-copy">
+      <h2 data-i18n="p_title">Réglez tout depuis votre téléphone</h2>
+      <p data-i18n="p_text">Un QR code s'affiche sur la TV. Scannez-le avec un téléphone connecté au même Wi-Fi : changez une annonce, un horaire ou la langue sans télécommande. Rien ne passe par Internet.</p>
+    </div>
+    <div class="phone-art" aria-hidden="true">
+      <div class="handset">
+        <div class="h-title">MIHRAB</div>
+        <div class="h-row"><span data-i18n="ph_adhan">Adhan</span><i class="sw on"></i></div>
+        <div class="h-row"><span data-i18n="ph_iqama">Iqama</span><i class="sw on"></i></div>
+        <div class="h-row"><span data-i18n="ph_night">Mode nuit</span><i class="sw"></i></div>
+        <div class="h-field" data-i18n="ph_ann">Cours de tajwid après Maghrib</div>
+        <div class="h-save" data-i18n="ph_save">Enregistrer</div>
+      </div>
+      <div class="qr"><svg viewBox="0 0 21 21" shape-rendering="crispEdges"><path id="qrpath" fill="currentColor"/></svg></div>
+    </div>
+  </section>
+
+  <section id="installer" class="install">
+    <h2 data-i18n="i_title">Installer sur la TV de la mosquée</h2>
+    <ol>
+      <li data-i18n="i1">Téléchargez le fichier APK depuis la page des versions GitHub.</li>
+      <li data-i18n="i2">Copiez-le sur une clé USB, ou installez « Downloader » sur la TV et saisissez le lien.</li>
+      <li data-i18n="i3">Ouvrez l'application, choisissez la ville et le nom de la mosquée dans les réglages.</li>
+      <li data-i18n="i4">Autorisez « Affichage par-dessus les autres applications » pour le démarrage automatique.</li>
+    </ol>
+    <a class="btn primary" href="https://github.com/RidhaHleli/mihrab_tv/releases/latest" data-i18n="cta_dl">Télécharger l'APK</a>
+  </section>
+</main>
+
+<footer>
+  <p><span data-i18n="made">Créé par</span> <a href="https://fluttiris.tn" rel="noopener">Fluttiris</a> — <span data-i18n="free">application gratuite pour les mosquées et les familles.</span></p>
+  <p><a href="https://fluttiris.tn" rel="noopener">fluttiris.tn</a> · <a href="https://github.com/RidhaHleli/mihrab_tv" rel="noopener">GitHub</a></p>
+</footer>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

@@ -51,7 +51,9 @@ class SettingsCard extends StatelessWidget {
     return GlassSurface(
       radius: p.cardRadius,
       padding: const EdgeInsets.all(16),
-      child: child,
+      // ListTile / SwitchListTile paint on the nearest Material: give them a
+      // transparent one so the glass background does not hide their ink.
+      child: Material(type: MaterialType.transparency, child: child),
     );
   }
 }
