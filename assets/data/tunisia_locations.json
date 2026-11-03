@@ -1,0 +1,201 @@
+
+{
+  "country": "Tunisie",
+  "countryCode": "TN",
+  "timezone": "Africa/Tunis",
+  "source": "Ministère de l'Intérieur - République Tunisienne",
+  "locations": [
+    {
+      "id": "TN11",
+      "governorate": "تونس",
+      "city": "تونس",
+      "cityFr": "Tunis",
+      "latitude": 36.80278,
+      "longitude": 10.17972
+    },
+    {
+      "id": "TN12",
+      "governorate": "أريانة",
+      "city": "أريانة",
+      "cityFr": "Ariana",
+      "latitude": 36.86250,
+      "longitude": 10.19556
+    },
+    {
+      "id": "TN13",
+      "governorate": "بن عروس",
+      "city": "بن عروس",
+      "cityFr": "Ben Arous",
+      "latitude": 36.75333,
+      "longitude": 10.2222
+    },
+    {
+      "id": "TN14",
+      "governorate": "منوبة",
+      "city": "منوبة",
+      "cityFr": "Manouba",
+      "latitude": 36.80778,
+      "longitude": 10.10111
+    },
+    {
+      "id": "TN15",
+      "governorate": "نابل",
+      "city": "نابل",
+      "cityFr": "Nabeul",
+      "latitude": 36.45000,
+      "longitude": 10.73333
+    },
+    {
+      "id": "TN16",
+      "governorate": "زغوان",
+      "city": "زغوان",
+      "cityFr": "Zaghouan",
+      "latitude": 36.40,
+      "longitude": 10.14
+    },
+    {
+      "id": "TN17",
+      "governorate": "بنزرت",
+      "city": "بنزرت",
+      "cityFr": "Bizerte",
+      "latitude": 37.29,
+      "longitude": 9.87
+    },
+    {
+      "id": "TN21",
+      "governorate": "باجة",
+      "city": "باجة",
+      "cityFr": "Béja",
+      "latitude": 36.73333,
+      "longitude": 9.18333
+    },
+    {
+      "id": "TN22",
+      "governorate": "جندوبة",
+      "city": "جندوبة",
+      "cityFr": "Jendouba",
+      "latitude": 36.50111,
+      "longitude": 8.77944
+    },
+    {
+      "id": "TN23",
+      "governorate": "الكاف",
+      "city": "الكاف",
+      "cityFr": "Le Kef",
+      "latitude": 36.19,
+      "longitude": 8.71
+    },
+    {
+      "id": "TN24",
+      "governorate": "سليانة",
+      "city": "سليانة",
+      "cityFr": "Siliana",
+      "latitude": 36.08333,
+      "longitude": 9.36667
+    },
+    {
+      "id": "TN31",
+      "governorate": "سوسة",
+      "city": "سوسة",
+      "cityFr": "Sousse",
+      "latitude": 35.82556,
+      "longitude": 10.64111
+    },
+    {
+      "id": "TN32",
+      "governorate": "المنستير",
+      "city": "المنستير",
+      "cityFr": "Monastir",
+      "latitude": 35.79,
+      "longitude": 10.82
+    },
+    {
+      "id": "TN33",
+      "governorate": "المهدية",
+      "city": "المهدية",
+      "cityFr": "Mahdia",
+      "latitude": 35.52,
+      "longitude": 11.07
+    },
+    {
+      "id": "TN34",
+      "governorate": "صفاقس",
+      "city": "صفاقس",
+      "cityFr": "Sfax",
+      "latitude": 34.74056,
+      "longitude": 10.76028
+    },
+    {
+      "id": "TN41",
+      "governorate": "القيروان",
+      "city": "القيروان",
+      "cityFr": "Kairouan",
+      "latitude": 35.68,
+      "longitude": 10.10
+    },
+    {
+      "id": "TN42",
+      "governorate": "القصرين",
+      "city": "القصرين",
+      "cityFr": "Kasserine",
+      "latitude": 35.18,
+      "longitude": 8.83
+    },
+    {
+      "id": "TN43",
+      "governorate": "سيدي بوزيد",
+      "city": "سيدي بوزيد",
+      "cityFr": "Sidi Bouzid",
+      "latitude": 35.04028,
+      "longitude": 9.49361
+    },
+    {
+      "id": "TN51",
+      "governorate": "قابس",
+      "city": "قابس",
+      "cityFr": "Gabès",
+      "latitude": 33.88333,
+      "longitude": 10.11667
+    },
+    {
+      "id": "TN52",
+      "governorate": "مدنين",
+      "city": "مدنين",
+      "cityFr": "Médenine",
+      "latitude": 33.35,
+      "longitude": 10.49
+    },
+    {
+      "id": "TN53",
+      "governorate": "تطاوين",
+      "city": "تطاوين",
+      "cityFr": "Tataouine",
+      "latitude": 32.93333,
+      "longitude": 10.45000
+    },
+    {
+      "id": "TN61",
+      "governorate": "قفصة",
+      "city": "قفصة",
+      "cityFr": "Gafsa",
+      "latitude": 34.42500,
+      "longitude": 8.78417
+    },
+    {
+      "id": "TN62",
+      "governorate": "توزر",
+      "city": "توزر",
+      "cityFr": "Tozeur",
+      "latitude": 33.93,
+      "longitude": 8.13
+    },
+    {
+      "id": "TN63",
+      "governorate": "قبلي",
+      "city": "قبلي",
+      "cityFr": "Kébili",
+      "latitude": 33.70194,
+      "longitude": 8.97361
+    }
+  ]
+}
