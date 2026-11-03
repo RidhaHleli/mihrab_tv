@@ -21,7 +21,12 @@ abstract final class MihrabRadius {
 
 /// Sizes and weights only: colours come from [MihrabText] (palette aware).
 abstract final class MihrabTypography {
+  /// Interface font (clean, modern Arabic) and calligraphic font for titles.
+  static const uiFamily = 'Tajawal';
+  static const calligraphyFamily = 'Amiri';
+
   static const display = TextStyle(
+    fontFamily: calligraphyFamily,
     fontSize: 64,
     fontWeight: FontWeight.w700,
     height: 1.25,
@@ -36,6 +41,7 @@ abstract final class MihrabTypography {
   );
 
   static const heading = TextStyle(
+    fontFamily: calligraphyFamily,
     fontSize: 30,
     fontWeight: FontWeight.w700,
     height: 1.35,
@@ -87,6 +93,7 @@ abstract final class MihrabTheme {
 
     return ThemeData(
       useMaterial3: true,
+      fontFamily: MihrabTypography.uiFamily,
       brightness: Brightness.dark,
       colorScheme: colors,
       extensions: [p],

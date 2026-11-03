@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/mihrab_palette.dart';
 import '../theme/mihrab_theme.dart';
+import 'glass_surface.dart';
 
 /// Tappable surface with a clearly visible focus state, so it can be driven by
 /// touch, mouse or a TV remote (D-pad + OK/Enter).
@@ -60,22 +61,14 @@ class _FocusableCardState extends State<FocusableCard> {
           child: AnimatedScale(
             scale: _focused ? 1.03 : 1,
             duration: const Duration(milliseconds: 140),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 140),
+            child: GlassSurface(
+              radius: widget.borderRadius,
               padding: widget.padding,
-              decoration: BoxDecoration(
-                color: _focused
-                    ? Color.alphaBlend(
-                        p.accent.withValues(alpha: 0.16),
-                        p.card,
-                      )
-                    : p.card,
-                borderRadius: BorderRadius.circular(widget.borderRadius),
-                border: Border.all(
-                  color: highlighted ? p.accent : p.cardBorder,
-                  width: _focused ? 2.5 : (widget.selected ? 2 : 1),
-                ),
-              ),
+              color: _focused
+                  ? Color.alphaBlend(p.accent.withValues(alpha: 0.16), p.card)
+                  : p.card,
+              borderColor: highlighted ? p.accent : p.cardBorder,
+              borderWidth: _focused ? 2.5 : (widget.selected ? 2 : 1),
               child: widget.child,
             ),
           ),

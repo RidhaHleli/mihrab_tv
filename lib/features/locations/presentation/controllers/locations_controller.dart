@@ -30,6 +30,7 @@ class LocationsController extends ChangeNotifier {
     return _locations.where((location) {
       return location.city.toLowerCase().contains(query) ||
           location.cityFr.toLowerCase().contains(query) ||
+          location.cityEn.toLowerCase().contains(query) ||
           location.governorate.toLowerCase().contains(query);
     }).toList();
   }
@@ -44,7 +45,7 @@ class LocationsController extends ChangeNotifier {
     try {
       _locations = await _getTunisiaLocations();
     } catch (e) {
-      _error = 'Impossible de charger les localisations.';
+      _error = 'load_locations_error';
     } finally {
       if (!_disposed) {
         _isLoading = false;

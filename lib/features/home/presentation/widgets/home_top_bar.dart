@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/l10n/app_strings.dart';
 import '../../../../core/responsive/responsive.dart';
+import '../../../../core/theme/islamic_patterns.dart';
 import '../../../../core/theme/mihrab_palette.dart';
+import '../../../../core/widgets/glass_surface.dart';
 import '../../../../core/widgets/focusable_card.dart';
 
 class HomeTopBar extends StatelessWidget {
@@ -25,18 +28,15 @@ class HomeTopBar extends StatelessWidget {
 
     return Row(
       children: [
-        Container(
+        SizedBox(
           width: badge,
           height: badge,
-          decoration: BoxDecoration(
-            color: p.surfaceElevated,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: p.cardBorder),
-          ),
-          child: Icon(
-            Icons.mosque_rounded,
-            color: p.accent,
-            size: badge * 0.55,
+          child: GlassSurface(
+            radius: 16,
+            borderColor: p.accent.withValues(alpha: 0.5),
+            child: Center(
+              child: StarOrnament(color: p.accent, size: badge * 0.58),
+            ),
           ),
         ),
         SizedBox(width: r.gap),
@@ -79,7 +79,7 @@ class HomeTopBar extends StatelessWidget {
         SizedBox(width: r.gap),
         FocusableCard(
           onTap: onSettingsPressed,
-          semanticLabel: 'الإعدادات',
+          semanticLabel: context.tr('settings'),
           child: SizedBox(
             width: r.tap(52),
             height: r.tap(52),

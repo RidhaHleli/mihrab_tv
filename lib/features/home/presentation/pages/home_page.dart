@@ -1,17 +1,30 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/data/daily_reminders.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/events/app_events.dart';
+import '../../../../core/l10n/app_strings.dart';
+import '../../../../core/remote/remote_control_service.dart';
 import '../../../../core/responsive/responsive.dart';
 import '../../../../core/services/adhan_player_service.dart';
 import '../../../../core/theme/mihrab_palette.dart';
 import '../../../../core/theme/themed_background.dart';
+import '../../../../core/utils/date_time_utils.dart';
+import '../../../../core/utils/hijri_date.dart';
+import '../../../../core/widgets/glass_surface.dart';
 import '../../../prayer_times/domain/entities/prayer_time.dart';
+import '../../../settings/domain/entities/app_settings.dart';
 import '../../../settings/presentation/controllers/settings_controller.dart';
 import '../../../settings/presentation/pages/settings_page.dart';
+import '../../domain/home_logic.dart';
 import '../controllers/home_controller.dart';
 import '../widgets/home_bottom_bar.dart';
+import '../widgets/home_overlays.dart';
 import '../widgets/home_top_bar.dart';
+import '../widgets/info_strips.dart';
 import '../widgets/prayer_hero_section.dart';
 import '../widgets/prayer_schedule_grid.dart';
 
@@ -27,7 +40,16 @@ class _HomePageState extends State<HomePage> {
   late final SettingsController _settingsController;
   late final AdhanPlayerService _adhan;
 
-  String _adhanPrayerName = '';
+  PrayerType? _adhanPrayer;
+
+  /// Overlay already closed by the user (so it does not come back).
+  String? _dismissedOverlay;
+
+  /// The night screen stays off until this moment after a key press.
+  DateTime _nightWakeUntil = DateTime.fromMillisecondsSinceEpoch(0);
+
+  static const Duration _nightWake = Duration(minutes: 2);
+  static const Duration _reminderRotation = Duration(seconds: 15);
 
   @override
   void initState() {
@@ -37,13 +59,15 @@ class _HomePageState extends State<HomePage> {
     _adhan = InjectionContainer.createAdhanPlayerService();
 
     _controller.onPrayerTime = _handlePrayerTime;
+    AppEvents.settingsChanged.addListener(_onSettingsEvent);
 
     _controller.load();
-    _settingsController.loadSettings();
+    unawaited(_initialSettings());
   }
 
   @override
   void dispose() {
+    AppEvents.settingsChanged.removeListener(_onSettingsEvent);
     _controller.onPrayerTime = null;
     _controller.dispose();
     _settingsController.dispose();
@@ -52,11 +76,38 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
+  Future<void> _initialSettings() async {
+    await _settingsController.loadSettings();
+    if (!mounted) return;
+    unawaited(RemoteControlService.instance.apply(_settingsController.settings));
+  }
+
+  /// Settings changed from the phone remote control.
+  void _onSettingsEvent() {
+    unawaited(_refreshSettings());
+  }
+
+  /// Reloads the settings and only reloads the prayer times when something
+  /// that affects them (place, method, adjustments) has really changed.
+  Future<void> _refreshSettings() async {
+    final before = _settingsController.settings;
+    await _settingsController.loadSettings();
+    if (!mounted) return;
+
+    final after = _settingsController.settings;
+
+    if (after.timesDifferFrom(before)) {
+      await _controller.reload();
+    }
+
+    unawaited(RemoteControlService.instance.apply(after));
+  }
+
   void _handlePrayerTime(PrayerTime prayer) {
     final settings = _settingsController.settings;
     if (!settings.adhanEnabled) return;
 
-    _adhanPrayerName = _getPrayerName(prayer.type);
+    _adhanPrayer = prayer.type;
 
     _adhan.play(
       isFajr: prayer.type == PrayerType.fajr,
@@ -65,21 +116,18 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _openSettings() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => const SettingsPage()),
-    );
+    await Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const SettingsPage()));
 
     if (!mounted) return;
 
-    await _settingsController.loadSettings();
-    await _controller.reload();
+    await _refreshSettings();
   }
 
   @override
   Widget build(BuildContext context) {
-    return ThemedBackground(
-      child: _buildContent(),
-    );
+    return ThemedBackground(child: _buildContent());
   }
 
   Widget _buildContent() {
@@ -92,30 +140,38 @@ class _HomePageState extends State<HomePage> {
       builder: (context, child) {
         final r = Responsive.of(context);
         final settings = _settingsController.settings;
+        final now = _controller.now;
+        final today = _controller.todayPrayerTimes;
         final nextPrayer = _controller.nextPrayer;
-        final prayers = _buildPrayerItems(nextPrayer);
+        final lang = context.languageCode;
+        final prayers = _buildPrayerItems(context, nextPrayer);
 
         final header = HomeTopBar(
           mosqueName: settings.displayName.trim().isEmpty
               ? AppConstants.defaultMosqueName
               : settings.displayName,
-          location: '${settings.cityName}، ${AppConstants.defaultCountry}',
+          location: _locationText(context, settings),
           onSettingsPressed: _openSettings,
         );
 
         final hero = PrayerHeroSection(
-          prayerName:
-              nextPrayer == null ? 'غير متاحة' : _getPrayerName(nextPrayer.type),
-          prayerTime:
-              nextPrayer == null ? '--:--' : _formatPrayerTime(nextPrayer.time),
-          remainingTime: _formatRemainingTime(_controller.timeUntilNextPrayer),
-          currentTime: _formatPrayerTime(_controller.now),
-          date: _formatArabicDate(_controller.now),
+          prayerName: nextPrayer == null
+              ? context.tr('unavailable')
+              : context.tr(nextPrayer.type.name),
+          prayerTime: nextPrayer == null
+              ? '--:--'
+              : DateTimeUtils.formatTime(nextPrayer.time),
+          remainingTime: DateTimeUtils.countdown(
+            _controller.timeUntilNextPrayer,
+          ),
+          currentTime: DateTimeUtils.formatTime(now),
+          date: _formatDate(now, lang),
+          hijriDate: _formatHijri(now, settings, lang),
         );
 
-        final banner = _buildBanner();
+        final bottom = _buildBottomInfo(context, settings, now, today);
 
-        return Scaffold(
+        final content = Scaffold(
           backgroundColor: Colors.transparent,
           body: SafeArea(
             child: r.isWide
@@ -127,35 +183,243 @@ class _HomePageState extends State<HomePage> {
                       prayers: prayers,
                       fillHeight: true,
                     ),
-                    banner: banner,
+                    banner: bottom,
+                    footer: _footer(),
                   )
                 : _StackedLayout(
                     r: r,
                     header: header,
                     hero: hero,
                     schedule: PrayerScheduleGrid(prayers: prayers),
-                    banner: banner,
+                    banner: bottom,
+                    footer: _footer(),
                   ),
           ),
+        );
+
+        final overlay = _buildOverlay(context, settings, now, today);
+
+        if (overlay == null) return content;
+
+        return Stack(
+          children: [content, Positioned.fill(child: overlay)],
         );
       },
     );
   }
 
-  Widget? _buildBanner() {
+  Widget _footer() {
+    return HomeBottomBar(
+      lastSync: _controller.lastSync,
+      isOnline: _controller.isOnline,
+      isSyncing: _controller.isSyncing,
+    );
+  }
+
+  // --- Overlays -------------------------------------------------------------
+
+  Widget? _buildOverlay(
+    BuildContext context,
+    AppSettings settings,
+    DateTime now,
+    List<PrayerTime> today,
+  ) {
+    if (today.isEmpty) return null;
+
+    final phase = PrayerPhaseResolver.resolve(
+      now: now,
+      today: today,
+      iqamaDelays: settings.iqamaDelays,
+      jumuahDelayMinutes: settings.jumuahDelayMinutes,
+      iqamaEnabled: settings.iqamaEnabled,
+    );
+
+    if (phase.isActive) {
+      final key =
+          '${now.year}-${now.month}-${now.day}-'
+          '${phase.prayer!.name}-${phase.kind.name}';
+
+      if (_dismissedOverlay != key) {
+        return IqamaOverlay(
+          phase: phase,
+          prayerName: _prayerLabel(context, phase),
+          onDismiss: () => setState(() => _dismissedOverlay = key),
+        );
+      }
+
+      return null;
+    }
+
+    if (settings.nightModeEnabled &&
+        now.isAfter(_nightWakeUntil) &&
+        NightModeResolver.isNight(now: now, today: today)) {
+      final next = _controller.nextPrayer;
+
+      return NightOverlay(
+        now: now,
+        nextPrayerName: next == null
+            ? ''
+            : context.tr(next.type.name),
+        nextPrayerTime: next == null
+            ? ''
+            : DateTimeUtils.formatTime(next.time),
+        onWake: () => setState(() => _nightWakeUntil = now.add(_nightWake)),
+      );
+    }
+
+    return null;
+  }
+
+  String _prayerLabel(BuildContext context, PrayerPhase phase) {
+    if (phase.isJumuah) return context.tr('jumuah');
+    return context.tr(phase.prayer!.name);
+  }
+
+  // --- Strips (banner, Ramadan, Friday, reminders, announcements) ----------
+
+  Widget? _buildBottomInfo(
+    BuildContext context,
+    AppSettings settings,
+    DateTime now,
+    List<PrayerTime> today,
+  ) {
+    final r = Responsive.of(context);
+    final children = <Widget>[];
+
+    final banner = _buildBanner(context);
+    if (banner != null) children.add(banner);
+
+    if (today.isNotEmpty &&
+        RamadanResolver.isRamadan(
+          now: now,
+          mode: settings.ramadanMode,
+          hijriAdjustment: settings.hijriAdjustment,
+        )) {
+      final info = RamadanResolver.resolve(
+        now: now,
+        today: today,
+        imsakMinutes: settings.imsakMinutes,
+      );
+      if (info != null) children.add(RamadanStrip(info: info));
+    }
+
+    final slots = _rotatingSlots(context, settings, now);
+    if (slots.isNotEmpty) {
+      final seconds = now.minute * 60 + now.second;
+      final index = (seconds ~/ _reminderRotation.inSeconds) % slots.length;
+      children.add(slots[index]);
+    }
+
+    if (settings.announcementsEnabled && settings.announcements.isNotEmpty) {
+      children.add(AnnouncementsStrip(announcements: settings.announcements));
+    }
+
+    if (children.isEmpty) return null;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (var i = 0; i < children.length; i++) ...[
+          if (i > 0) SizedBox(height: r.gap * 0.6),
+          children[i],
+        ],
+      ],
+    );
+  }
+
+  List<Widget> _rotatingSlots(
+    BuildContext context,
+    AppSettings settings,
+    DateTime now,
+  ) {
+    final slots = <Widget>[];
+    final langIndex = AppLanguage.fromCode(context.languageCode).index;
+
+    if (now.weekday == DateTime.friday) {
+      slots.add(
+        MessageStrip(
+          icon: Icons.mosque_rounded,
+          label: context.tr('jumuah'),
+          text: context.tr('friday_banner'),
+          highlight: true,
+        ),
+      );
+    }
+
+    if (settings.dailyReminderEnabled) {
+      const labels = {
+        ReminderKind.verse: 'rem_verse',
+        ReminderKind.hadith: 'rem_hadith',
+        ReminderKind.dhikr: 'rem_dhikr',
+      };
+      const icons = {
+        ReminderKind.verse: Icons.menu_book_rounded,
+        ReminderKind.hadith: Icons.format_quote_rounded,
+        ReminderKind.dhikr: Icons.auto_awesome_rounded,
+      };
+
+      for (final kind in ReminderKind.values) {
+        final reminder = DailyReminders.forDay(kind, now);
+
+        slots.add(
+          MessageStrip(
+            icon: icons[kind]!,
+            label: context.tr(labels[kind]!),
+            source: reminder.sourceFor(langIndex),
+            text: reminder.textFor(langIndex),
+          ),
+        );
+      }
+    }
+
+    return slots;
+  }
+
+  Widget? _buildBanner(BuildContext context) {
     if (_adhan.isPlaying.value) {
+      final type = _adhanPrayer;
+
       return _StatusMessage(
-        message: 'حان الآن وقت صلاة $_adhanPrayerName',
+        message: context.tr(
+          'adhan_now',
+          args: {'p': type == null ? '' : context.tr(type.name)},
+        ),
         icon: Icons.volume_up_rounded,
         highlight: true,
       );
     }
 
-    final message = _getStatusMessage();
+    final message = _getStatusMessage(context);
     return message == null ? null : _StatusMessage(message: message);
   }
 
-  List<PrayerScheduleItem> _buildPrayerItems(PrayerTime? nextPrayer) {
+  String? _getStatusMessage(BuildContext context) {
+    if (_controller.isLoading && _controller.todayPrayerTimes.isEmpty) {
+      return context.tr('loading_times');
+    }
+
+    if (_controller.errorMessage != null &&
+        _controller.todayPrayerTimes.isEmpty) {
+      return context.tr('load_error');
+    }
+
+    if (!_controller.isLoading && _controller.todayPrayerTimes.isEmpty) {
+      return context.tr('no_times');
+    }
+
+    return null;
+  }
+
+  // --- Prayer grid ----------------------------------------------------------
+
+  List<PrayerScheduleItem> _buildPrayerItems(
+    BuildContext context,
+    PrayerTime? nextPrayer,
+  ) {
+    final now = _controller.now;
+    final isFriday = now.weekday == DateTime.friday;
+
     return PrayerType.values.map((type) {
       final matchingPrayers = _controller.todayPrayerTimes.where(
         (prayer) => prayer.type == type,
@@ -165,16 +429,20 @@ class _HomePageState extends State<HomePage> {
 
       final isNext =
           nextPrayer?.type == type &&
-          nextPrayer!.time.year == _controller.now.year &&
-          nextPrayer.time.month == _controller.now.month &&
-          nextPrayer.time.day == _controller.now.day;
+          nextPrayer!.time.year == now.year &&
+          nextPrayer.time.month == now.month &&
+          nextPrayer.time.day == now.day;
+
+      final name = (isFriday && type == PrayerType.dhuhr)
+          ? context.tr('jumuah')
+          : context.tr(type.name);
 
       return PrayerScheduleItem(
-        name: _getPrayerName(type),
-        time: prayer == null ? '--:--' : _formatPrayerTime(prayer.time),
+        name: name,
+        time: prayer == null ? '--:--' : DateTimeUtils.formatTime(prayer.time),
         icon: _getPrayerIcon(type),
         isNext: isNext,
-        isPassed: prayer != null && prayer.time.isBefore(_controller.now),
+        isPassed: prayer != null && prayer.time.isBefore(now),
       );
     }).toList();
   }
@@ -196,85 +464,36 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  String? _getStatusMessage() {
-    if (_controller.isLoading) {
-      return 'جارٍ تحميل مواقيت الصلاة...';
-    }
+  // --- Text helpers ---------------------------------------------------------
 
-    if (_controller.errorMessage != null) {
-      return 'تعذر تحميل مواقيت الصلاة.';
-    }
+  String _locationText(BuildContext context, AppSettings settings) {
+    final separator = context.languageCode == 'ar' ? '، ' : ', ';
+    final city = settings.localizedCity();
 
-    if (_controller.todayPrayerTimes.isEmpty) {
-      return 'لم تتم إضافة مواقيت الصلاة لهذا التاريخ بعد.';
-    }
+    final country = settings.countryCode == 'TN'
+        ? context.tr('country_tn')
+        : settings.governorateName;
 
-    return null;
+    return country.isEmpty ? city : '$city$separator$country';
   }
 
-  String _getPrayerName(PrayerType type) {
-    switch (type) {
-      case PrayerType.fajr:
-        return 'الفجر';
-      case PrayerType.sunrise:
-        return 'الشروق';
-      case PrayerType.dhuhr:
-        return 'الظهر';
-      case PrayerType.asr:
-        return 'العصر';
-      case PrayerType.maghrib:
-        return 'المغرب';
-      case PrayerType.isha:
-        return 'العشاء';
-    }
+  String _formatDate(DateTime date, String lang) {
+    final comma = lang == 'ar' ? '،' : ',';
+
+    return '${DateNames.weekday(lang, date.weekday)}$comma '
+        '${date.day} ${DateNames.month(lang, date.month)} ${date.year}';
   }
 
-  String _formatPrayerTime(DateTime time) {
-    final hour = time.hour.toString().padLeft(2, '0');
-    final minute = time.minute.toString().padLeft(2, '0');
-    return '$hour:$minute';
-  }
+  String _formatHijri(DateTime date, AppSettings settings, String lang) {
+    final hijri = HijriDate.fromGregorian(
+      date,
+      adjustment: settings.hijriAdjustment,
+    );
 
-  String _formatRemainingTime(Duration? duration) {
-    if (duration == null) {
-      return '-- : -- : --';
-    }
+    final suffix = lang == 'ar' ? 'هـ' : (lang == 'fr' ? 'H' : 'AH');
 
-    final hours = duration.inHours.toString().padLeft(2, '0');
-    final minutes = duration.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
-
-    return '$hours : $minutes : $seconds';
-  }
-
-  String _formatArabicDate(DateTime date) {
-    const weekdays = [
-      'الاثنين',
-      'الثلاثاء',
-      'الأربعاء',
-      'الخميس',
-      'الجمعة',
-      'السبت',
-      'الأحد',
-    ];
-
-    const months = [
-      'جانفي',
-      'فيفري',
-      'مارس',
-      'أفريل',
-      'ماي',
-      'جوان',
-      'جويلية',
-      'أوت',
-      'سبتمبر',
-      'أكتوبر',
-      'نوفمبر',
-      'ديسمبر',
-    ];
-
-    return '${weekdays[date.weekday - 1]}، '
-        '${date.day} ${months[date.month - 1]} ${date.year}';
+    return '${hijri.day} ${DateNames.hijriMonth(lang, hijri.month)} '
+        '${hijri.year} $suffix';
   }
 }
 
@@ -285,6 +504,7 @@ class _WideLayout extends StatelessWidget {
     required this.hero,
     required this.schedule,
     required this.banner,
+    required this.footer,
   });
 
   final Responsive r;
@@ -292,6 +512,7 @@ class _WideLayout extends StatelessWidget {
   final Widget hero;
   final Widget schedule;
   final Widget? banner;
+  final Widget footer;
 
   @override
   Widget build(BuildContext context) {
@@ -316,7 +537,7 @@ class _WideLayout extends StatelessWidget {
           ),
           if (banner != null) ...[SizedBox(height: r.gap), banner!],
           SizedBox(height: r.s(20)),
-          const HomeBottomBar(),
+          footer,
         ],
       ),
     );
@@ -330,6 +551,7 @@ class _StackedLayout extends StatelessWidget {
     required this.hero,
     required this.schedule,
     required this.banner,
+    required this.footer,
   });
 
   final Responsive r;
@@ -337,6 +559,7 @@ class _StackedLayout extends StatelessWidget {
   final Widget hero;
   final Widget schedule;
   final Widget? banner;
+  final Widget footer;
 
   @override
   Widget build(BuildContext context) {
@@ -358,7 +581,7 @@ class _StackedLayout extends StatelessWidget {
               schedule,
               if (banner != null) ...[SizedBox(height: r.gap), banner!],
               SizedBox(height: r.gap + 8),
-              const HomeBottomBar(),
+              footer,
             ],
           ),
         ),
@@ -386,15 +609,11 @@ class _StatusMessage extends StatelessWidget {
 
     return Semantics(
       liveRegion: true,
-      child: Container(
+      child: GlassSurface(
+        radius: 14,
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-        decoration: BoxDecoration(
-          color: highlight ? p.accentSurface : p.card,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: highlight ? p.accent : p.cardBorder,
-          ),
-        ),
+        color: highlight ? p.accentSurface.withValues(alpha: 0.85) : p.card,
+        borderColor: highlight ? p.accent : p.cardBorder,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

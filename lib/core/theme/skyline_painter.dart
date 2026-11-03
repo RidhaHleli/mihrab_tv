@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import 'islamic_patterns.dart';
 import 'mihrab_palette.dart';
 
 /// Night scene behind the UI: sky, glow, stars and the silhouette of the
@@ -25,6 +26,7 @@ class SkylinePainter extends CustomPainter {
     final rect = Offset.zero & size;
 
     _paintSky(canvas, rect);
+    _paintPattern(canvas, size, rect);
     _paintStars(canvas, size);
     _paintMoon(canvas, size);
 
@@ -78,6 +80,34 @@ class SkylinePainter extends CustomPainter {
           ],
         ).createShader(rect),
     );
+  }
+
+  /// Interlocking stars that fade out towards the skyline.
+  void _paintPattern(Canvas canvas, Size size, Rect rect) {
+    final cell = math.max(28.0, math.min(120.0, size.shortestSide / 6));
+
+    canvas.saveLayer(rect, Paint());
+
+    IslamicPatternPainter(
+      color: palette.accent.withValues(alpha: 0.16 * intensity),
+      hexagonal: palette.skyline == SkylineStyle.quds,
+      cell: cell,
+      strokeWidth: math.max(0.8, cell / 80),
+    ).paint(canvas, size);
+
+    canvas.drawRect(
+      rect,
+      Paint()
+        ..blendMode = BlendMode.dstIn
+        ..shader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Colors.white, Color(0x00FFFFFF)],
+          stops: [0.0, 0.8],
+        ).createShader(rect),
+    );
+
+    canvas.restore();
   }
 
   void _paintStars(Canvas canvas, Size size) {

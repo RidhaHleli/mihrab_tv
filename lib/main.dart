@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import 'core/di/injection_container.dart';
+import 'core/l10n/app_strings.dart';
 import 'core/theme/app_theme_controller.dart';
 import 'core/theme/mihrab_palette.dart';
 import 'core/theme/mihrab_theme.dart';
@@ -29,30 +30,36 @@ class MihrabApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<AppThemeId>(
-      valueListenable: AppThemeController.instance,
-      builder: (context, themeId, _) {
-        return MaterialApp(
-          title: 'MIHRAB | محراب',
-          debugShowCheckedModeBanner: false,
-          theme: MihrabTheme.of(themeId),
-          // Arabic locale => RTL direction and Arabic Material strings.
-          locale: const Locale('ar'),
-          supportedLocales: const [Locale('ar')],
-          localizationsDelegates: const [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          builder: (context, child) {
-            // Respect the system font size but keep the layout from breaking.
-            return MediaQuery.withClampedTextScaling(
-              minScaleFactor: 0.9,
-              maxScaleFactor: 1.25,
-              child: child ?? const SizedBox.shrink(),
+    return ValueListenableBuilder<String>(
+      valueListenable: AppLocaleController.instance,
+      builder: (context, languageCode, _) {
+        return ValueListenableBuilder<AppThemeId>(
+          valueListenable: AppThemeController.instance,
+          builder: (context, themeId, _) {
+            return MaterialApp(
+              title: 'MIHRAB | محراب',
+              debugShowCheckedModeBanner: false,
+              theme: MihrabTheme.of(themeId),
+              // The locale drives the text direction (ar = RTL) and the
+              // Material strings.
+              locale: Locale(languageCode),
+              supportedLocales: const [Locale('ar'), Locale('fr'), Locale('en')],
+              localizationsDelegates: const [
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              builder: (context, child) {
+                // Respect the system font size but keep the layout intact.
+                return MediaQuery.withClampedTextScaling(
+                  minScaleFactor: 0.9,
+                  maxScaleFactor: 1.25,
+                  child: child ?? const SizedBox.shrink(),
+                );
+              },
+              home: const HomePage(),
             );
           },
-          home: const HomePage(),
         );
       },
     );

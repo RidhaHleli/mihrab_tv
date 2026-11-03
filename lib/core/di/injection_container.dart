@@ -1,4 +1,5 @@
 import '../../features/home/presentation/controllers/home_controller.dart';
+import '../l10n/app_strings.dart';
 import '../services/adhan_player_service.dart';
 import '../theme/app_theme_controller.dart';
 import '../theme/mihrab_palette.dart';
@@ -13,6 +14,7 @@ import '../../features/prayer_times/data/datasources/remote_prayer_times_data_so
 import '../../features/prayer_times/data/datasources/local_prayer_calendar_cache_data_source.dart';
 import '../../features/prayer_times/data/repositories/prayer_times_repository_impl.dart';
 import '../../features/prayer_times/domain/usecases/get_daily_prayer_times.dart';
+import '../../features/prayer_times/domain/usecases/sync_prayer_calendar.dart';
 
 import '../../features/settings/data/datasources/local_settings_data_source.dart';
 import '../../features/settings/data/repositories/settings_repository_impl.dart';
@@ -35,14 +37,16 @@ class InjectionContainer {
 
     final getDailyPrayerTimes = GetDailyPrayerTimes(repository);
 
-    return HomeController(getDailyPrayerTimes);
+    return HomeController(getDailyPrayerTimes, SyncPrayerCalendar(repository));
   }
 
-  /// Applies the saved theme before the first frame (avoids a colour flash).
+  /// Applies the saved theme and language before the first frame
+  /// (avoids a colour / direction flash).
   static Future<void> restoreTheme() async {
     try {
       final settings = await LocalSettingsDataSource().getSettings();
       AppThemeController.instance.value = AppThemeId.fromName(settings.themeId);
+      AppLocaleController.instance.value = settings.language;
     } catch (_) {
       // Keep the default theme.
     }
